@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <title>VietFlow - Thông báo hệ thống</title>
+    <style>
+        table, td, div, h1, p {
+            font-family: "Roboto Flex", sans-serif !important;
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #ffffff;">
+<table role="presentation" style="width: 100%; border-collapse: collapse; background: #ffffff;">
+    <tr>
+        <td align="center" style="padding: 0;">
+            <table role="presentation" style="width: 602px; border-collapse: collapse; text-align: left;">
+                <!-- Header -->
+                <tr>
+                    <td align="center" style="padding: 30px 0; background: #f4f4f4;">
+                        <img
+                            src="/images/logo.png"
+                            alt="VietFlow Logo"
+                            width="150"
+                            style="height: auto; display: block;"
+                        />
+                        <br/>
+                        <strong style="font-weight: bold; font-size: 25px; color: #153643;">VietFlow</strong>
+                    </td>
+                </tr>
+
+                <!-- Body -->
+                <tr>
+                    <td style="padding: 36px 30px 42px 30px;">
+                        <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="color: #d32f2f;">
+                                    <h1 style="font-size: 20px; margin: 0 0 20px 0;" th:text="${title}">
+                                        Tiêu đề email
+                                    </h1>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0 0 25px 0; color: #153643;">
+                                    <h1 style="font-size: 17px; margin: 0 0 20px 0;">Kính gửi Quý khách,</h1>
+                                    <div style="font-size: 15px; line-height: 1.6;" th:utext="${body}">
+                                        Nội dung email sẽ được hiển thị tại đây.
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                    <td style="padding: 30px; background: #b71c1c;">
+                        <table role="presentation" style="width: 100%; border-collapse: collapse; font-size: 13px; color: #ffffff;">
+                            <tr>
+                                <td style="padding: 0; width: 50%;" align="left">
+                                    <div style="line-height: 1.8;">
+                                        <div>
+                                            📧 Email:
+                                            <a href="mailto:contact@vietflow.app" style="color: #fff; text-decoration: none;">contact@vietflow.app</a>
+                                        </div>
+                                        <div>
+                                            ☎️ Hotline:
+                                            <a href="tel:+84901234567" style="color: #fff; text-decoration: none;">+84 901 234 567</a>
+                                        </div>
+                                        <div>
+                                            🌐 Website:
+                                            <a href="https://vietflow.app" style="color: #fff; text-decoration: none;" target="_blank">vietflow.app</a>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding: 0; width: 40%;" align="right">
+                                    <table role="presentation" style="border-collapse: collapse;">
+                                        <tr>
+                                            <td style="padding: 0 5px;">
+                                                <a href="https://facebook.com/vietflowapp" target="_blank">
+                                                    <img
+                                                        src="https://res.cloudinary.com/dcnrv9qjs/image/upload/v1722135003/image_form_editor/facebook_mkmyhz.png"
+                                                        alt="Facebook"
+                                                        width="38"
+                                                        style="display: block; border: 0;"
+                                                    />
+                                                </a>
+                                            </td>
+                                            <td style="padding: 0 5px;">
+                                                <a href="https://t.me/vietflow" target="_blank">
+                                                    <img
+                                                        src="https://res.cloudinary.com/dcnrv9qjs/image/upload/v1722135003/image_form_editor/telegram_vcaube.png"
+                                                        alt="Telegram"
+                                                        width="38"
+                                                        style="display: block; border: 0;"
+                                                    />
+                                                </a>
+                                            </td>
+                                            <td style="padding: 0 5px;">
+                                                <a href="https://zalo.me/vietflow" target="_blank">
+                                                    <img
+                                                        src="https://res.cloudinary.com/dcnrv9qjs/image/upload/v1722135003/image_form_editor/zalo_ccs5hd.png"
+                                                        alt="Zalo"
+                                                        width="38"
+                                                        style="display: block; border: 0;"
+                                                    />
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <div
+                            style="
+                font-size: 13px;
+                margin-top: 20px;
+                text-align: center;
+                color: white;
+                font-weight: 500;
+              "
+                        >
+                            © 2025 VietFlow — Ứng dụng dịch thuật thông minh.
+                            <br />
+                            Phát triển bởi
+                            <a target="_blank" style="color: #fff; font-style: italic;" href="https://4sdigital.vn">
+                                4S Digital Services
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

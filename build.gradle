@@ -1,0 +1,119 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.5'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+description = 'motorbike-be'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+    google()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-configuration-processor'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // HTTP Client for OpenAI API
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // JSON processing
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    // Lombok for reducing boilerplate code
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Spring Boot Starters
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-mail:1.2.0.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter-aop:3.2.3'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    testImplementation 'org.springframework.security:spring-security-test'
+
+    // Security (OAuth2, JWT)
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    // Google API & OAuth Client
+    implementation 'com.google.api-client:google-api-client:1.32.1'
+    implementation 'com.google.oauth-client:google-oauth-client-jetty:1.32.1'
+    implementation 'com.google.http-client:google-http-client-jackson2:1.32.1'
+    
+    // Google Play Developer API
+    implementation 'com.google.apis:google-api-services-androidpublisher:v3-rev20250904-2.0.0'
+
+    // Spring Data & Hibernate
+    implementation group: 'org.springframework.data', name: 'spring-data-rest-core', version: '2.1.0.RELEASE'
+    implementation 'org.hibernate:hibernate-core:6.3.1.Final'
+    implementation 'org.hibernate:hibernate-jcache:5.6.7.Final'
+
+    // Database (MySQL, Connection Pool)
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    implementation 'com.zaxxer:HikariCP'
+
+    // Caching
+    implementation 'org.ehcache:ehcache:3.10.0'
+    implementation 'javax.cache:cache-api'
+    implementation 'org.springframework.session:spring-session-data-redis'
+
+    // Mail
+    implementation 'com.sun.mail:jakarta.mail:2.0.1'
+
+    // File Handling & Cloudinary
+    implementation 'com.cloudinary:cloudinary-http44:1.31.0'
+    implementation 'org.apache.commons:commons-text:1.12.0'
+    implementation 'commons-io:commons-io:2.11.0'
+
+    // Excel Handling
+    implementation group: 'com.github.pjfanning', name: 'excel-streaming-reader', version: '4.3.1'
+
+    // Apache HttpClient
+    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+
+    // JSON Processing
+    implementation 'org.json:json:20210307'
+
+    // OWASP Security (XSS, HTML Sanitization)
+    implementation group: 'org.owasp.esapi', name: 'esapi', version: '2.5.3.1'
+    implementation group: 'org.owasp.antisamy', name: 'antisamy', version: '1.7.5'
+    implementation group: 'com.googlecode.owasp-java-html-sanitizer', name: 'owasp-java-html-sanitizer', version: '20220608.1'
+
+    // View Layer (Thymeleaf)
+    implementation 'org.thymeleaf:thymeleaf:3.1.2.RELEASE'
+
+    // Utilities (ModelMapper, UserAgent, TSID)
+    implementation 'org.modelmapper:modelmapper:3.1.1'
+    implementation group: 'eu.bitwalker', name: 'UserAgentUtils', version: '1.21'
+    implementation 'com.github.f4b6a3:tsid-creator:5.2.6'
+
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-websocket
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-websocket', version: '3.4.0'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
