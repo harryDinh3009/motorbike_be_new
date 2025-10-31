@@ -1,5 +1,6 @@
 package com.translateai.business.admin.carMng.web;
 
+import com.translateai.business.admin.carMng.excel.CarExcelService;
 import com.translateai.business.admin.carMng.service.CarMngService;
 import com.translateai.common.ApiResponse;
 import com.translateai.common.ApiStatus;
@@ -10,10 +11,13 @@ import com.translateai.dto.business.admin.carMng.CarDTO;
 import com.translateai.dto.business.admin.carMng.CarSaveDTO;
 import com.translateai.dto.business.admin.carMng.CarSearchDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +30,7 @@ import java.util.stream.Collectors;
 public class CarMngController {
 
     private final CarMngService carMngService;
+    private final CarExcelService carExcelService;
 
     /**
      * Tìm kiếm xe với phân trang
@@ -157,6 +162,97 @@ public class CarMngController {
                 })
                 .collect(Collectors.toList());
         return new ApiResponse<>(ApiStatus.SUCCESS, statuses);
+    }
+
+    // ========== Excel Import/Export APIs ==========
+
+    /**
+     * Tải xuống file Excel mẫu
+     * File có 10 dòng trống với dropdown cho các combobox
+     *
+     * @return File Excel
+     */
+    @GetMapping("/download-template")
+    public ResponseEntity<byte[]> downloadTemplate() {
+        ByteArrayOutputStream out = carExcelService.downloadTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", "Mau_Danh_Sach_Xe.xlsx");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(out.toByteArray());
+    }
+
+    /**
+     * Import dữ liệu từ file Excel
+     * Kiểm tra validation, nếu có 1 record lỗi thì throw exception
+     *
+     * @param file File Excel
+     * @return Số lượng record đã import
+     */
+    @PostMapping(value = "/import-excel", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ApiResponse<Map<String, Object>> importExcel(@RequestParam("file") MultipartFile file) {
+        Integer count = carExcelService.importExcel(file);
+        Map<String, Object> response = new HashMap<>();
+        response.put("count", count);
+        response.put("message", "Import thành công " + count + " xe");
+        return new ApiResponse<>(ApiStatus.SUCCESS, response);
+    }
+
+    /**
+     * Export danh sách xe ra file Excel
+     * Export các record tìm được theo điều kiện search
+     *
+     * @param searchDTO Điều kiện tìm kiếm (giống API /list)
+     * @return File Excel
+     */
+    @PostMapping("/export-excel")
+    public ResponseEntity<byte[]> exportExcel(@RequestBody CarSearchDTO searchDTO) {
+        // Tìm kiếm xe theo điều kiện
+        PageableObject<CarDTO> searchResult = carMngService.searchCars(searchDTO);
+        
+        // Convert CarDTO sang CarSaveDTO để export
+        List<CarSaveDTO> cars = searchResult.getData().stream()
+                .map(carDTO -> {
+                    CarSaveDTO saveDTO = new CarSaveDTO();
+                    saveDTO.setId(carDTO.getId());
+                    saveDTO.setModel(carDTO.getModel());
+                    saveDTO.setLicensePlate(carDTO.getLicensePlate());
+                    saveDTO.setCarType(carDTO.getCarType());
+                    saveDTO.setBranchId(carDTO.getBranchId());
+                    saveDTO.setDailyPrice(carDTO.getDailyPrice());
+                    saveDTO.setHourlyPrice(carDTO.getHourlyPrice());
+                    saveDTO.setCondition(carDTO.getCondition());
+                    saveDTO.setCurrentOdometer(carDTO.getCurrentOdometer());
+                    saveDTO.setStatus(carDTO.getStatus());
+                    saveDTO.setImageUrl(carDTO.getImageUrl());
+                    saveDTO.setNote(carDTO.getNote());
+                    saveDTO.setYearOfManufacture(carDTO.getYearOfManufacture());
+                    saveDTO.setOrigin(carDTO.getOrigin());
+                    saveDTO.setValue(carDTO.getValue());
+                    saveDTO.setFrameNumber(carDTO.getFrameNumber());
+                    saveDTO.setEngineNumber(carDTO.getEngineNumber());
+                    saveDTO.setColor(carDTO.getColor());
+                    saveDTO.setRegistrationNumber(carDTO.getRegistrationNumber());
+                    saveDTO.setRegisteredOwnerName(carDTO.getRegisteredOwnerName());
+                    saveDTO.setRegistrationPlace(carDTO.getRegistrationPlace());
+                    saveDTO.setInsuranceContractNumber(carDTO.getInsuranceContractNumber());
+                    saveDTO.setInsuranceExpiryDate(carDTO.getInsuranceExpiryDate());
+                    return saveDTO;
+                })
+                .collect(Collectors.toList());
+        
+        ByteArrayOutputStream out = carExcelService.exportExcel(cars);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", "Danh_Sach_Xe.xlsx");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(out.toByteArray());
     }
 }
 
