@@ -7,9 +7,7 @@ import com.translateai.config.exception.RestApiException;
 import com.translateai.dto.business.admin.employeeMng.EmployeeDTO;
 import com.translateai.dto.business.admin.employeeMng.EmployeeSaveDTO;
 import com.translateai.dto.business.admin.employeeMng.EmployeeSearchDTO;
-import com.translateai.entity.domain.BranchEntity;
 import com.translateai.entity.domain.EmployeeEntity;
-import com.translateai.repository.business.admin.BranchRepository;
 import com.translateai.repository.business.admin.EmployeeRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +30,6 @@ import java.util.stream.Collectors;
 public class EmployeeMngServiceImpl implements EmployeeMngService {
 
     private final EmployeeRepository employeeRepository;
-    private final BranchRepository branchRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -51,11 +48,6 @@ public class EmployeeMngServiceImpl implements EmployeeMngService {
         
         EmployeeEntity employee = employeeEntity.get();
         EmployeeDTO dto = modelMapper.map(employee, EmployeeDTO.class);
-        
-        if (employee.getBranch() != null) {
-            dto.setBranchId(employee.getBranch().getId());
-            dto.setBranchName(employee.getBranch().getName());
-        }
         
         return dto;
     }
@@ -82,16 +74,9 @@ public class EmployeeMngServiceImpl implements EmployeeMngService {
         employeeEntity.setDateOfBirth(saveDTO.getDateOfBirth());
         employeeEntity.setGender(saveDTO.getGender());
         employeeEntity.setAddress(saveDTO.getAddress());
+        employeeEntity.setBranchId(saveDTO.getBranchId());
         employeeEntity.setRole(saveDTO.getRole());
         employeeEntity.setStatus(saveDTO.getStatus() != null ? saveDTO.getStatus() : 1);
-
-        // Set branch
-        if (StringUtils.isNotBlank(saveDTO.getBranchId())) {
-            Optional<BranchEntity> branchEntity = branchRepository.findById(saveDTO.getBranchId());
-            if (branchEntity.isPresent()) {
-                employeeEntity.setBranch(branchEntity.get());
-            }
-        }
 
         employeeRepository.save(employeeEntity);
         return true;
@@ -113,14 +98,7 @@ public class EmployeeMngServiceImpl implements EmployeeMngService {
     public List<EmployeeDTO> getEmployeesByBranch(String branchId) {
         List<EmployeeEntity> employees = employeeRepository.findByBranchId(branchId);
         return employees.stream()
-                .map(employee -> {
-                    EmployeeDTO dto = modelMapper.map(employee, EmployeeDTO.class);
-                    if (employee.getBranch() != null) {
-                        dto.setBranchId(employee.getBranch().getId());
-                        dto.setBranchName(employee.getBranch().getName());
-                    }
-                    return dto;
-                })
+                .map(employee -> modelMapper.map(employee, EmployeeDTO.class))
                 .collect(Collectors.toList());
     }
 }

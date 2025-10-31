@@ -49,10 +49,9 @@ public class EmployeeEntity extends PrimaryEntity {
     @Nationalized
     private String address;
 
-    /** Chi nhánh */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "branch_id")
-    private BranchEntity branch;
+    /** ID chi nhánh */
+    @Column(name = "branch_id", length = EntityProperties.LENGTH_ID)
+    private String branchId;
 
     /** Vai trò/Chức vụ */
     @Column(name = "role", length = EntityProperties.LENGTH_NAME)

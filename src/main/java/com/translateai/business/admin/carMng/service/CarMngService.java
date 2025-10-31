@@ -1,10 +1,11 @@
-package com.translateai.business.admin.contractMng.service;
+package com.translateai.business.admin.carMng.service;
 
 import com.translateai.common.PageableObject;
-import com.translateai.dto.business.admin.contractMng.CarDTO;
-import com.translateai.dto.business.admin.contractMng.CarSaveDTO;
-import com.translateai.dto.business.admin.contractMng.CarSearchDTO;
+import com.translateai.dto.business.admin.carMng.CarDTO;
+import com.translateai.dto.business.admin.carMng.CarSaveDTO;
+import com.translateai.dto.business.admin.carMng.CarSearchDTO;
 import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -48,5 +49,14 @@ public interface CarMngService {
      * @return List<CarDTO>
      */
     List<CarDTO> getAllCars();
+
+    /**
+     * Upload ảnh xe
+     *
+     * @param carId ID xe
+     * @param file File ảnh
+     * @return URL ảnh
+     */
+    String uploadCarImage(String carId, MultipartFile file);
 }
 

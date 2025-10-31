@@ -1,14 +1,16 @@
-package com.translateai.business.admin.contractMng.impl;
+package com.translateai.business.admin.carMng.impl;
 
-import com.translateai.business.admin.contractMng.service.CarMngService;
+import com.translateai.business.admin.carMng.service.CarMngService;
 import com.translateai.common.ApiStatus;
 import com.translateai.common.PageableObject;
+import com.translateai.config.cloudinary.CloudinaryUploadImages;
 import com.translateai.config.exception.RestApiException;
-import com.translateai.dto.business.admin.contractMng.CarDTO;
-import com.translateai.dto.business.admin.contractMng.CarSaveDTO;
-import com.translateai.dto.business.admin.contractMng.CarSearchDTO;
+import com.translateai.dto.business.admin.carMng.CarDTO;
+import com.translateai.dto.business.admin.carMng.CarSaveDTO;
+import com.translateai.dto.business.admin.carMng.CarSearchDTO;
 import com.translateai.entity.domain.CarEntity;
 import com.translateai.repository.business.admin.CarRepository;
+import com.translateai.util.CloudinaryUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -19,9 +21,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -31,6 +33,7 @@ import java.util.stream.Collectors;
 public class CarMngServiceImpl implements CarMngService {
 
     private final CarRepository carRepository;
+    private final CloudinaryUploadImages cloudinaryUploadImages;
     private final ModelMapper modelMapper;
 
     @Override
@@ -38,8 +41,8 @@ public class CarMngServiceImpl implements CarMngService {
         Pageable pageable = PageRequest.of(searchDTO.getPage() - 1, searchDTO.getSize());
         Page<CarDTO> carPage = carRepository.searchCars(pageable, searchDTO);
         
-        // Map status description
-        carPage.forEach(car -> {
+        // Set status name
+        carPage.getContent().forEach(car -> {
             if (car.getStatus() != null) {
                 car.setStatusNm(car.getStatus().getDescription());
             }
@@ -59,6 +62,7 @@ public class CarMngServiceImpl implements CarMngService {
         if (carDTO.getStatus() != null) {
             carDTO.setStatusNm(carDTO.getStatus().getDescription());
         }
+        
         return carDTO;
     }
 
@@ -69,11 +73,6 @@ public class CarMngServiceImpl implements CarMngService {
         boolean isNew = StringUtils.isBlank(saveDTO.getId());
 
         if (isNew) {
-            // Kiểm tra biển số xe đã tồn tại
-            CarEntity existingCar = carRepository.findByLicensePlate(saveDTO.getLicensePlate());
-            if (Objects.nonNull(existingCar)) {
-                throw new RestApiException(ApiStatus.BAD_REQUEST);
-            }
             carEntity = new CarEntity();
         } else {
             Optional<CarEntity> carEntityFind = carRepository.findById(saveDTO.getId());
@@ -83,13 +82,30 @@ public class CarMngServiceImpl implements CarMngService {
             carEntity = carEntityFind.get();
         }
 
-        carEntity.setName(saveDTO.getName());
+        carEntity.setModel(saveDTO.getModel());
         carEntity.setLicensePlate(saveDTO.getLicensePlate());
         carEntity.setCarType(saveDTO.getCarType());
+        carEntity.setBranchId(saveDTO.getBranchId());
         carEntity.setDailyPrice(saveDTO.getDailyPrice());
+        carEntity.setHourlyPrice(saveDTO.getHourlyPrice());
+        carEntity.setCondition(saveDTO.getCondition());
+        carEntity.setCurrentOdometer(saveDTO.getCurrentOdometer());
         carEntity.setStatus(saveDTO.getStatus());
         carEntity.setImageUrl(saveDTO.getImageUrl());
-        carEntity.setDescription(saveDTO.getDescription());
+        carEntity.setNote(saveDTO.getNote());
+        
+        // Thông tin bổ sung
+        carEntity.setYearOfManufacture(saveDTO.getYearOfManufacture());
+        carEntity.setOrigin(saveDTO.getOrigin());
+        carEntity.setValue(saveDTO.getValue());
+        carEntity.setFrameNumber(saveDTO.getFrameNumber());
+        carEntity.setEngineNumber(saveDTO.getEngineNumber());
+        carEntity.setColor(saveDTO.getColor());
+        carEntity.setRegistrationNumber(saveDTO.getRegistrationNumber());
+        carEntity.setRegisteredOwnerName(saveDTO.getRegisteredOwnerName());
+        carEntity.setRegistrationPlace(saveDTO.getRegistrationPlace());
+        carEntity.setInsuranceContractNumber(saveDTO.getInsuranceContractNumber());
+        carEntity.setInsuranceExpiryDate(saveDTO.getInsuranceExpiryDate());
 
         carRepository.save(carEntity);
         return true;
@@ -109,16 +125,45 @@ public class CarMngServiceImpl implements CarMngService {
 
     @Override
     public List<CarDTO> getAllCars() {
-        List<CarEntity> cars = carRepository.findAll();
-        return cars.stream()
-                .map(car -> {
-                    CarDTO dto = modelMapper.map(car, CarDTO.class);
+        List<CarEntity> carEntities = carRepository.findAll();
+        return carEntities.stream()
+                .map(entity -> {
+                    CarDTO dto = modelMapper.map(entity, CarDTO.class);
                     if (dto.getStatus() != null) {
                         dto.setStatusNm(dto.getStatus().getDescription());
                     }
                     return dto;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public String uploadCarImage(String carId, MultipartFile file) {
+        // Tìm xe
+        Optional<CarEntity> carEntity = carRepository.findById(carId);
+        if (!carEntity.isPresent()) {
+            throw new RestApiException(ApiStatus.NOT_FOUND);
+        }
+
+        // Xóa ảnh cũ nếu có
+        if (StringUtils.isNotBlank(carEntity.get().getImageUrl())) {
+            try {
+                String publicId = CloudinaryUtils.extractPublicId(carEntity.get().getImageUrl());
+                cloudinaryUploadImages.deleteImage(publicId);
+            } catch (Exception e) {
+                // Log error but continue with upload
+            }
+        }
+
+        // Upload ảnh mới
+        String imageUrl = cloudinaryUploadImages.uploadImage(file, "car-images");
+        
+        // Cập nhật URL vào database
+        carEntity.get().setImageUrl(imageUrl);
+        carRepository.save(carEntity.get());
+
+        return imageUrl;
     }
 }
 

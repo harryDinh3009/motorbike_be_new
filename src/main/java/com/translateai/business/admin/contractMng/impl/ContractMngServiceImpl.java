@@ -96,7 +96,7 @@ public class ContractMngServiceImpl implements ContractMngService {
         
         contractDTO.setId(contract.getId());
         contractDTO.setCarId(contract.getCarId());
-        contractDTO.setCarName(carEntity.get().getName());
+        contractDTO.setCarName(carEntity.get().getModel());
         contractDTO.setLicensePlate(carEntity.get().getLicensePlate());
         contractDTO.setCustomerId(contract.getCustomerId());
         contractDTO.setCustomerName(customerEntity.get().getFullName());
@@ -324,7 +324,7 @@ public class ContractMngServiceImpl implements ContractMngService {
             
             // Thông tin xe
             document.add(new Paragraph("THÔNG TIN XE THUÊ").setBold());
-            document.add(new Paragraph("Tên xe: " + car.getName()));
+            document.add(new Paragraph("Mẫu xe: " + car.getModel()));
             document.add(new Paragraph("Biển số: " + car.getLicensePlate()));
             if (StringUtils.isNotBlank(car.getCarType())) {
                 document.add(new Paragraph("Loại xe: " + car.getCarType()));
