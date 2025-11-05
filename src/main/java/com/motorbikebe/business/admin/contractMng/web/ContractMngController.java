@@ -5,6 +5,7 @@ import com.motorbikebe.business.admin.contractMng.service.ContractMngService;
 import com.motorbikebe.common.ApiResponse;
 import com.motorbikebe.common.ApiStatus;
 import com.motorbikebe.common.PageableObject;
+import com.motorbikebe.constant.enumconstant.ContractStatus;
 import com.motorbikebe.dto.business.admin.contractMng.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -15,9 +16,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Controller quản lý hợp đồng (đã nâng cấp hoàn toàn)
@@ -243,5 +246,23 @@ public class ContractMngController {
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(out.toByteArray());
+    }
+
+    /**
+     * Lấy danh sách trạng thái hợp đồng
+     *
+     * @return List<Map<String, String>>
+     */
+    @GetMapping("/contract-statuses")
+    public ApiResponse<List<Map<String, String>>> getContractStatuses() {
+        List<Map<String, String>> statuses = Arrays.stream(ContractStatus.values())
+                .map(status -> {
+                    Map<String, String> map = new HashMap<>();
+                    map.put("code", status.name());
+                    map.put("name", status.getDescription());
+                    return map;
+                })
+                .collect(Collectors.toList());
+        return new ApiResponse<>(ApiStatus.SUCCESS, statuses);
     }
 }
