@@ -1,5 +1,7 @@
 package com.motorbikebe.business.admin.contractMng.impl;
 
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
@@ -28,6 +30,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -592,13 +596,21 @@ public class ContractMngServiceImpl implements ContractMngService {
             document.setMargins(20, 20, 20, 20);
             
             // Load fonts
-            String fontPath = "src/main/resources/fonts/times.ttf";
-            String fontBoldPath = "src/main/resources/fonts/timesbd.ttf";
-            com.itextpdf.kernel.font.PdfFont font = com.itextpdf.kernel.font.PdfFontFactory.createFont(
-                    fontPath, com.itextpdf.io.font.PdfEncodings.IDENTITY_H);
-            com.itextpdf.kernel.font.PdfFont fontBold = com.itextpdf.kernel.font.PdfFontFactory.createFont(
-                    fontBoldPath, com.itextpdf.io.font.PdfEncodings.IDENTITY_H);
-            
+            PdfFont font;
+            PdfFont fontBold;
+            try (InputStream fontStream = getClass().getClassLoader().getResourceAsStream("fonts/times.ttf");
+                 InputStream fontBoldStream = getClass().getClassLoader().getResourceAsStream("fonts/timesbd.ttf")) {
+
+                if (fontStream == null || fontBoldStream == null) {
+                    throw new FileNotFoundException("Font files not found in resources/fonts/");
+                }
+
+               font = PdfFontFactory.createFont(
+                        fontStream.readAllBytes(), com.itextpdf.io.font.PdfEncodings.IDENTITY_H);
+                fontBold = PdfFontFactory.createFont(
+                        fontBoldStream.readAllBytes(), com.itextpdf.io.font.PdfEncodings.IDENTITY_H);
+            }
+
             // ========== HEADER ==========
             Paragraph header1 = new Paragraph("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM")
                     .setFont(fontBold)
