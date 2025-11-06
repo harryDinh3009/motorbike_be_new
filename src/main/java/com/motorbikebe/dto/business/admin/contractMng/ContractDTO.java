@@ -40,6 +40,7 @@ public class ContractDTO {
     private Boolean needPickupDelivery;
     private Boolean needReturnDelivery;
     private String notes;
+    private Date createdDate;
     
     // Financial Info
     private BigDecimal totalRentalAmount;

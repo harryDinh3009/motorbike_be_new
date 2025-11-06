@@ -105,7 +105,8 @@ public class ContractMngServiceImpl implements ContractMngService {
             contractDTO.setEmail(customer.get().getEmail());
             contractDTO.setCountry(customer.get().getCountry());
             contractDTO.setCitizenId(customer.get().getCitizenId());
-            
+            contractDTO.setCreatedDate(new Date(contractOpt.get().getCreatedDate()));
+
             // Count total contracts
             int totalContracts = contractRepository.findByCustomerId(contract.getCustomerId()).size();
             contractDTO.setTotalContracts(totalContracts);
