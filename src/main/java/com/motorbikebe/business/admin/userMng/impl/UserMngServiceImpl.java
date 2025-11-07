@@ -215,14 +215,12 @@ public class UserMngServiceImpl implements UserMngService {
             throw new RestApiException(ApiStatus.NOT_FOUND);
         }
         
-        // Delete user role first
-        UserRoleEntity userRoleEntity = userRoleRepository.findByUserId(id);
-        if (Objects.nonNull(userRoleEntity)) {
-            userRoleRepository.delete(userRoleEntity);
-        }
+        // Delete all user roles first using native query (safe and efficient)
+        // This will delete all roles for the user, even if multiple roles exist
+        userRoleRepository.deleteAllByUserId(id);
         
         // Delete user
-        userRepository.delete(userEntityFind.get());
+        userRepository.deleteById(id);
         
         return true;
     }
