@@ -46,9 +46,10 @@ public class CarMngController {
 
     /**
      * Tìm kiếm xe có sẵn với phân trang
-     * Nếu truyền startDate và endDate: kiểm tra xe có trong hợp đồng nào có thời gian trùng lặp không
-     * - Nếu trùng: chuyển status về NOT_AVAILABLE
-     * - Nếu không trùng: giữ nguyên status của xe
+     * - Chỉ lấy các xe thuộc chi nhánh của người đang đăng nhập
+     * - Nếu truyền startDate và endDate: kiểm tra xe có trong hợp đồng nào có thời gian trùng lặp không
+     *   + Nếu trùng: chuyển status về NOT_AVAILABLE
+     *   + Nếu không trùng: giữ nguyên status của xe
      *
      * @param searchDTO DTO tìm kiếm (bao gồm startDate và endDate)
      * @return PageableObject<CarDTO>

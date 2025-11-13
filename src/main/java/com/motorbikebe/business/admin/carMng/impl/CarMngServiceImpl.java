@@ -1,6 +1,7 @@
 package com.motorbikebe.business.admin.carMng.impl;
 
 import com.motorbikebe.business.admin.carMng.service.CarMngService;
+import com.motorbikebe.business.common.service.service.CommonService;
 import com.motorbikebe.common.ApiStatus;
 import com.motorbikebe.common.PageableObject;
 import com.motorbikebe.config.cloudinary.CloudinaryUploadImages;
@@ -8,6 +9,7 @@ import com.motorbikebe.config.exception.RestApiException;
 import com.motorbikebe.dto.business.admin.carMng.CarDTO;
 import com.motorbikebe.dto.business.admin.carMng.CarSaveDTO;
 import com.motorbikebe.dto.business.admin.carMng.CarSearchDTO;
+import com.motorbikebe.dto.common.userCurrent.UserCurrentInfoDTO;
 import com.motorbikebe.entity.domain.CarEntity;
 import com.motorbikebe.repository.business.admin.CarRepository;
 import com.motorbikebe.util.CloudinaryUtils;
@@ -35,6 +37,7 @@ public class CarMngServiceImpl implements CarMngService {
     private final CarRepository carRepository;
     private final CloudinaryUploadImages cloudinaryUploadImages;
     private final ModelMapper modelMapper;
+    private final CommonService commonService;
 
     @Override
     public PageableObject<CarDTO> searchCars(CarSearchDTO searchDTO) {
@@ -168,6 +171,13 @@ public class CarMngServiceImpl implements CarMngService {
 
     @Override
     public PageableObject<CarDTO> searchAvailableCars(CarSearchDTO searchDTO) {
+        // Lấy thông tin user hiện tại
+        UserCurrentInfoDTO userCurrentInfo = commonService.getUserCurrentInfo();
+        if (userCurrentInfo != null && StringUtils.isNotBlank(userCurrentInfo.getBranchId())) {
+            // Set branchId của user hiện tại vào searchDTO để lọc xe theo chi nhánh
+            searchDTO.setBranchId(userCurrentInfo.getBranchId());
+        }
+
         Pageable pageable = PageRequest.of(searchDTO.getPage() - 1, searchDTO.getSize());
         Page<CarDTO> carPage = carRepository.searchAvailableCars(pageable, searchDTO);
 
