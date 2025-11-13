@@ -303,6 +303,7 @@ public class ContractMngServiceImpl implements ContractMngService {
                 dto.setCarModel(car.getModel());
                 dto.setCarType(car.getCarType());
                 dto.setLicensePlate(car.getLicensePlate());
+                dto.setStatus(car.getStatus().toString());
             });
             
             return dto;

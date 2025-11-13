@@ -34,5 +34,6 @@ public class ContractCarDTO {
     private Integer endOdometer;
     
     private String notes;
+    private String status;
 }
 
