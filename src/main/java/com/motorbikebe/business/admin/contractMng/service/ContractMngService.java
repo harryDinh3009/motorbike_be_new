@@ -2,6 +2,7 @@ package com.motorbikebe.business.admin.contractMng.service;
 
 import com.motorbikebe.common.PageableObject;
 import com.motorbikebe.dto.business.admin.contractMng.*;
+import com.motorbikebe.entity.domain.ContractEntity;
 import jakarta.validation.Valid;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,7 +26,7 @@ public interface ContractMngService {
     /**
      * Tạo mới hoặc cập nhật hợp đồng
      */
-    Boolean saveContract(@Valid ContractSaveDTO saveDTO);
+    ContractEntity saveContract(@Valid ContractSaveDTO saveDTO);
 
     /**
      * Xóa hợp đồng

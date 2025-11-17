@@ -7,6 +7,7 @@ import com.motorbikebe.common.ApiStatus;
 import com.motorbikebe.common.PageableObject;
 import com.motorbikebe.constant.enumconstant.ContractStatus;
 import com.motorbikebe.dto.business.admin.contractMng.*;
+import com.motorbikebe.entity.domain.ContractEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -57,8 +58,8 @@ public class ContractMngController {
      * Tạo mới hoặc cập nhật hợp đồng
      */
     @PostMapping("/save")
-    public ApiResponse<Boolean> saveContract(@RequestBody ContractSaveDTO saveDTO) {
-        Boolean response = contractMngService.saveContract(saveDTO);
+    public ApiResponse<ContractEntity> saveContract(@RequestBody ContractSaveDTO saveDTO) {
+        ContractEntity response = contractMngService.saveContract(saveDTO);
         return new ApiResponse<>(ApiStatus.CREATED, response);
     }
 

@@ -157,7 +157,7 @@ public class ContractMngServiceImpl implements ContractMngService {
 
     @Override
     @Transactional
-    public Boolean saveContract(@Valid ContractSaveDTO saveDTO) {
+    public ContractEntity saveContract(@Valid ContractSaveDTO saveDTO) {
         ContractEntity contractEntity;
         boolean isNew = StringUtils.isBlank(saveDTO.getId());
 
@@ -267,7 +267,7 @@ public class ContractMngServiceImpl implements ContractMngService {
             }
         }
 
-        return true;
+        return contractEntity;
     }
 
     @Override
