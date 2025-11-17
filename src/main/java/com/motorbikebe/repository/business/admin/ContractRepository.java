@@ -4,6 +4,8 @@ import com.motorbikebe.constant.enumconstant.ContractStatus;
 import com.motorbikebe.dto.business.admin.contractMng.ContractDTO;
 import com.motorbikebe.dto.business.admin.contractMng.ContractSearchDTO;
 import com.motorbikebe.entity.domain.ContractEntity;
+import com.motorbikebe.repository.projection.ContractRevenueProjection;
+import com.motorbikebe.repository.projection.DailyRevenueProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -124,6 +126,51 @@ public interface ContractRepository extends JpaRepository<ContractEntity, String
      */
     @Query(value = "SELECT CONCAT('HD', LPAD(IFNULL(MAX(CAST(SUBSTRING(contract_code, 3) AS UNSIGNED)), 0) + 1, 6, '0')) FROM contract WHERE contract_code LIKE 'HD%'", nativeQuery = true)
     String generateContractCode();
+
+    @Query(value = """
+            SELECT COUNT(con.id)
+            FROM contract con
+            WHERE con.status <> 'CANCELLED'
+              AND (:branchId IS NULL OR :branchId = '' OR con.pickup_branch_id = :branchId OR con.return_branch_id = :branchId)
+              AND con.start_date >= :startDate
+              AND con.start_date < :endDate
+            """, nativeQuery = true)
+    long countContractsByBranchAndDate(@Param("branchId") String branchId,
+                                       @Param("startDate") Date startDate,
+                                       @Param("endDate") Date endDate);
+
+    @Query(value = """
+            SELECT 
+                COALESCE(SUM(con.final_amount), 0) AS contractAmount,
+                COALESCE(SUM(con.total_rental_amount), 0) AS rentalAmount,
+                COALESCE(SUM(con.total_surcharge), 0) AS surchargeAmount
+            FROM contract con
+            WHERE con.status <> 'CANCELLED'
+              AND (:branchId IS NULL OR :branchId = '' OR con.pickup_branch_id = :branchId OR con.return_branch_id = :branchId)
+              AND con.start_date >= :startDate
+              AND con.start_date < :endDate
+            """, nativeQuery = true)
+    ContractRevenueProjection sumRevenueByBranchAndDate(@Param("branchId") String branchId,
+                                                         @Param("startDate") Date startDate,
+                                                         @Param("endDate") Date endDate);
+
+    @Query(value = """
+            SELECT 
+                DATE(con.start_date) AS revenueDate,
+                COALESCE(SUM(con.final_amount), 0) AS contractAmount,
+                COALESCE(SUM(con.total_rental_amount), 0) AS rentalAmount,
+                COALESCE(SUM(con.total_surcharge), 0) AS surchargeAmount
+            FROM contract con
+            WHERE con.status <> 'CANCELLED'
+              AND (:branchId IS NULL OR :branchId = '' OR con.pickup_branch_id = :branchId OR con.return_branch_id = :branchId)
+              AND con.start_date >= :startDate
+              AND con.start_date < :endDate
+            GROUP BY DATE(con.start_date)
+            ORDER BY revenueDate
+            """, nativeQuery = true)
+    List<DailyRevenueProjection> sumDailyRevenueByBranchAndDate(@Param("branchId") String branchId,
+                                                                @Param("startDate") Date startDate,
+                                                                @Param("endDate") Date endDate);
 }
 
 

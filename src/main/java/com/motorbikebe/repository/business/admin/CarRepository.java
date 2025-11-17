@@ -72,6 +72,14 @@ public interface CarRepository extends JpaRepository<CarEntity, String> {
     List<CarEntity> findByBranchId(String branchId);
 
     @Query(value = """
+            SELECT COUNT(c.id)
+            FROM car c
+            WHERE (:branchId IS NULL OR :branchId = '' OR c.branch_id = :branchId)
+              AND c.status <> 'LOST'
+            """, nativeQuery = true)
+    long countActiveCarsByBranch(@Param("branchId") String branchId);
+
+    @Query(value = """
             SELECT c.id,
                    c.model,
                    c.license_plate AS licensePlate,
