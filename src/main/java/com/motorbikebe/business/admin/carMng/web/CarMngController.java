@@ -1,15 +1,15 @@
 package com.motorbikebe.business.admin.carMng.web;
 
 import com.motorbikebe.business.admin.carMng.excel.CarExcelService;
+import com.motorbikebe.business.admin.carMng.service.CarModelService;
 import com.motorbikebe.business.admin.carMng.service.CarMngService;
 import com.motorbikebe.common.ApiResponse;
 import com.motorbikebe.common.ApiStatus;
 import com.motorbikebe.common.PageableObject;
 import com.motorbikebe.constant.classconstant.CarConstants;
 import com.motorbikebe.constant.enumconstant.CarStatus;
-import com.motorbikebe.dto.business.admin.carMng.CarDTO;
-import com.motorbikebe.dto.business.admin.carMng.CarSaveDTO;
-import com.motorbikebe.dto.business.admin.carMng.CarSearchDTO;
+import com.motorbikebe.dto.business.admin.carMng.*;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -31,6 +31,7 @@ public class CarMngController {
 
     private final CarMngService carMngService;
     private final CarExcelService carExcelService;
+    private final CarModelService carModelService;
 
     /**
      * Tìm kiếm xe với phân trang
@@ -129,7 +130,43 @@ public class CarMngController {
      */
     @GetMapping("/car-models")
     public ApiResponse<List<String>> getCarModels() {
-        return new ApiResponse<>(ApiStatus.SUCCESS, CarConstants.CAR_MODELS);
+        return new ApiResponse<>(ApiStatus.SUCCESS, carModelService.getActiveModelNames());
+    }
+
+    /**
+     * Lấy toàn bộ thông tin mẫu xe (bao gồm trạng thái) cho admin quản lý
+     */
+    @GetMapping("/car-models/manage")
+    public ApiResponse<List<CarModelDTO>> getCarModelsForManage() {
+        return new ApiResponse<>(ApiStatus.SUCCESS, carModelService.getAllCarModels());
+    }
+
+    /**
+     * Tạo mẫu xe mới
+     */
+    @PostMapping("/car-models")
+    public ApiResponse<CarModelDTO> createCarModel(@Valid @RequestBody CarModelSaveDTO saveDTO) {
+        CarModelDTO response = carModelService.createCarModel(saveDTO);
+        return new ApiResponse<>(ApiStatus.CREATED, response);
+    }
+
+    /**
+     * Cập nhật mẫu xe
+     */
+    @PutMapping("/car-models/{id}")
+    public ApiResponse<CarModelDTO> updateCarModel(@PathVariable String id,
+                                                   @Valid @RequestBody CarModelSaveDTO saveDTO) {
+        CarModelDTO response = carModelService.updateCarModel(id, saveDTO);
+        return new ApiResponse<>(ApiStatus.SUCCESS, response);
+    }
+
+    /**
+     * Xóa mẫu xe
+     */
+    @DeleteMapping("/car-models/{id}")
+    public ApiResponse<Boolean> deleteCarModel(@PathVariable String id) {
+        Boolean response = carModelService.deleteCarModel(id);
+        return new ApiResponse<>(ApiStatus.SUCCESS, response);
     }
 
     /**

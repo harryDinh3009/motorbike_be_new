@@ -1,5 +1,6 @@
 package com.motorbikebe.business.admin.carMng.excel;
 
+import com.motorbikebe.business.admin.carMng.service.CarModelService;
 import com.motorbikebe.common.ApiStatus;
 import com.motorbikebe.config.exception.RestApiException;
 import com.motorbikebe.constant.classconstant.CarConstants;
@@ -37,6 +38,7 @@ public class CarExcelServiceImpl implements CarExcelService {
 
     private final CarRepository carRepository;
     private final BranchRepository branchRepository;
+    private final CarModelService carModelService;
 
     // Column headers
     private static final String[] HEADERS = {
@@ -110,6 +112,7 @@ public class CarExcelServiceImpl implements CarExcelService {
 
             List<CarSaveDTO> carsToSave = new ArrayList<>();
             List<String> errors = new ArrayList<>();
+            List<String> validCarModels = carModelService.getActiveModelNames();
 
             // Start from row 1 (skip header)
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
@@ -120,7 +123,7 @@ public class CarExcelServiceImpl implements CarExcelService {
 
                 try {
                     CarSaveDTO carDTO = parseRowToCarDTO(row, i + 1);
-                    validateCarDTO(carDTO, i + 1);
+                    validateCarDTO(carDTO, i + 1, validCarModels);
                     carsToSave.add(carDTO);
                 } catch (Exception e) {
                     errors.add("Dòng " + (i + 1) + ": " + e.getMessage());
@@ -260,11 +263,13 @@ public class CarExcelServiceImpl implements CarExcelService {
 
         DataValidationHelper validationHelper = sheet.getDataValidationHelper();
 
-        // Column A: Mẫu xe (CAR_MODELS)
-        List<String> carModels = CarConstants.CAR_MODELS;
-        createDropdownList(hiddenSheet, 0, carModels);
-        addDropdownWithFormula(sheet, validationHelper, 1, 10, 0, 0,
-                "Dropdowns!$A$1:$A$" + carModels.size());
+        // Column A: Mẫu xe (dynamic)
+        List<String> carModels = carModelService.getActiveModelNames();
+        if (!carModels.isEmpty()) {
+            createDropdownList(hiddenSheet, 0, carModels);
+            addDropdownWithFormula(sheet, validationHelper, 1, 10, 0, 0,
+                    "Dropdowns!$A$1:$A$" + carModels.size());
+        }
 
         // Column B: Loại xe (CAR_TYPES)
         List<String> carTypes = CarConstants.CAR_TYPES;
@@ -396,13 +401,13 @@ public class CarExcelServiceImpl implements CarExcelService {
         return dto;
     }
 
-    private void validateCarDTO(CarSaveDTO dto, int rowNum) {
+    private void validateCarDTO(CarSaveDTO dto, int rowNum, List<String> validCarModels) {
         List<String> errors = new ArrayList<>();
 
         // Required fields
         if (StringUtils.isBlank(dto.getModel())) {
             errors.add("Mẫu xe không được để trống");
-        } else if (!CarConstants.CAR_MODELS.contains(dto.getModel())) {
+        } else if (validCarModels == null || !validCarModels.contains(dto.getModel())) {
             errors.add("Mẫu xe không hợp lệ");
         }
 

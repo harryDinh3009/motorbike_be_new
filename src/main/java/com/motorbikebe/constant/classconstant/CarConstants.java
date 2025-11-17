@@ -9,38 +9,6 @@ import java.util.List;
 public class CarConstants {
 
     /**
-     * Danh sách mẫu xe
-     */
-    public static final List<String> CAR_MODELS = Arrays.asList(
-            "Honda Wave Alpha",
-            "Honda Winner 150",
-            "Honda Air Blade 150",
-            "Honda SH 150i",
-            "Honda SH 160i",
-            "Honda Vision",
-            "Honda Lead",
-            "Honda PCX",
-            "Honda XR150",
-            "Yamaha Sirius",
-            "Yamaha Exciter 150",
-            "Yamaha Exciter 155",
-            "Yamaha Janus",
-            "Yamaha FreeGo",
-            "Yamaha NVX 155",
-            "Yamaha PG-1",
-            "Suzuki Raider 150",
-            "Suzuki Satria F150",
-            "Suzuki Impulse",
-            "Suzuki Address",
-            "SYM Symphony",
-            "SYM Attila",
-            "SYM Galaxy",
-            "Piaggio Vespa Sprint",
-            "Piaggio Vespa Primavera",
-            "Piaggio Liberty"
-    );
-
-    /**
      * Danh sách loại xe
      */
     public static final List<String> CAR_TYPES = Arrays.asList(
