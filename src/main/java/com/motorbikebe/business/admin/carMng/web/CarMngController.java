@@ -3,6 +3,7 @@ package com.motorbikebe.business.admin.carMng.web;
 import com.motorbikebe.business.admin.carMng.excel.CarExcelService;
 import com.motorbikebe.business.admin.carMng.service.CarModelService;
 import com.motorbikebe.business.admin.carMng.service.CarMngService;
+import com.motorbikebe.business.admin.carMng.service.CarReportService;
 import com.motorbikebe.common.ApiResponse;
 import com.motorbikebe.common.ApiStatus;
 import com.motorbikebe.common.PageableObject;
@@ -32,6 +33,7 @@ public class CarMngController {
     private final CarMngService carMngService;
     private final CarExcelService carExcelService;
     private final CarModelService carModelService;
+    private final CarReportService carReportService;
 
     /**
      * Tìm kiếm xe với phân trang
@@ -252,6 +254,22 @@ public class CarMngController {
         response.put("count", count);
         response.put("message", "Import thành công " + count + " xe");
         return new ApiResponse<>(ApiStatus.SUCCESS, response);
+    }
+
+    /**
+     * Export báo cáo xe khả dụng cho thuê (PDF)
+     */
+    @PostMapping("/report/available-cars")
+    public ResponseEntity<byte[]> exportAvailableCarsReport(@RequestBody AvailableCarReportRequestDTO request) {
+        byte[] pdfBytes = carReportService.exportAvailableCarsReport(request);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "Bao_Cao_Xe_Kha_Dung.pdf");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(pdfBytes);
     }
 
     /**
