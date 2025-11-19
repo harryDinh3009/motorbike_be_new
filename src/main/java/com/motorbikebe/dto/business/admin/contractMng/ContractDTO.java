@@ -26,6 +26,11 @@ public class ContractDTO {
     private String email; // Email khách
     private String country; // Quốc tịch khách (nếu có)
     private String citizenId; // CCCD/Hộ chiếu khách
+    private String customerAddress; // Địa chỉ thường trú của khách
+    @JsonFormat(pattern = "dd/MM/yyyy", timezone = "GMT+07:00")
+    private Date customerDateOfBirth; // Ngày sinh của khách
+    @JsonFormat(pattern = "dd/MM/yyyy", timezone = "GMT+07:00")
+    private Date citizenIdIssuedDate; // Ngày cấp CCCD/CMND (nếu có)
     private Integer totalContracts; // Số hợp đồng thuê
     
     // Contract Info

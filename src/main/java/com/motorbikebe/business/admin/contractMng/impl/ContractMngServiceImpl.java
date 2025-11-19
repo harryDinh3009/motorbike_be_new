@@ -100,11 +100,18 @@ public class ContractMngServiceImpl implements ContractMngService {
         // Load customer info
         Optional<CustomerEntity> customer = customerRepository.findById(contract.getCustomerId());
         if (customer.isPresent()) {
-            contractDTO.setCustomerName(customer.get().getFullName());
-            contractDTO.setPhoneNumber(customer.get().getPhoneNumber());
-            contractDTO.setEmail(customer.get().getEmail());
-            contractDTO.setCountry(customer.get().getCountry());
-            contractDTO.setCitizenId(customer.get().getCitizenId());
+            CustomerEntity customerEntity = customer.get();
+            contractDTO.setCustomerName(customerEntity.getFullName());
+            contractDTO.setPhoneNumber(customerEntity.getPhoneNumber());
+            contractDTO.setEmail(customerEntity.getEmail());
+            contractDTO.setCountry(customerEntity.getCountry());
+            contractDTO.setCitizenId(customerEntity.getCitizenId());
+            contractDTO.setCustomerAddress(customerEntity.getAddress());
+            contractDTO.setCustomerDateOfBirth(customerEntity.getDateOfBirth());
+            // Hiện tại hệ thống chưa lưu riêng ngày cấp CCCD, tạm thời dùng ngày tạo hồ sơ khách
+            if (customerEntity.getCreatedDate() != null) {
+                contractDTO.setCitizenIdIssuedDate(new Date(customerEntity.getCreatedDate()));
+            }
             contractDTO.setCreatedDate(new Date(contractOpt.get().getCreatedDate()));
 
             // Count total contracts
@@ -806,9 +813,10 @@ public class ContractMngServiceImpl implements ContractMngService {
                     .setMarginLeft(20)
                     .setMarginBottom(2));
 
-            String address = contract.getPickupAddress() != null && !contract.getPickupAddress().isEmpty()
-                    ? contract.getPickupAddress()
-                    : contract.getReturnAddress();
+            String address = firstNonEmpty(
+                    contract.getCustomerAddress(),
+                    contract.getPickupAddress(),
+                    contract.getReturnAddress());
 
             document.add(new Paragraph("Địa chỉ: " + valueOrPlaceholder(address, "[Địa chỉ]"))
                     .setFont(font)
@@ -822,7 +830,7 @@ public class ContractMngServiceImpl implements ContractMngService {
                     .setMarginLeft(20)
                     .setMarginBottom(2));
 
-            document.add(new Paragraph("Ngày sinh: " + valueOrPlaceholder(null, "[Ngày sinh]"))
+            document.add(new Paragraph("Ngày sinh: " + formatDateValue(contract.getCustomerDateOfBirth(), "dd/MM/yyyy", "[Ngày sinh]"))
                     .setFont(font)
                     .setFontSize(11)
                     .setMarginLeft(20)
@@ -833,7 +841,7 @@ public class ContractMngServiceImpl implements ContractMngService {
                     .setFontSize(11)
                     .setMarginLeft(20)
                     .setMarginBottom(2));
-            document.add(new Paragraph("Ngày cấp: " + valueOrPlaceholder(null, "[Ngày cấp]"))
+            document.add(new Paragraph("Ngày cấp: " + formatDateValue(contract.getCitizenIdIssuedDate(), "dd/MM/yyyy", "[Ngày cấp]"))
                     .setFont(font)
                     .setFontSize(11)
                     .setMarginLeft(20)
@@ -858,8 +866,8 @@ public class ContractMngServiceImpl implements ContractMngService {
                     .setFontSize(11)
                     .setMarginBottom(3));
 
-            String startDateStr = contract.getStartDate() != null ? dateFormat.format(contract.getStartDate()) : "[Ngày thuê]";
-            String endDateStr = contract.getEndDate() != null ? dateFormat.format(contract.getEndDate()) : "[Ngày trả]";
+            String startDateStr = formatDateValue(contract.getStartDate(), "dd/MM/yyyy HH:mm", "[Ngày thuê]");
+            String endDateStr = formatDateValue(contract.getEndDate(), "dd/MM/yyyy HH:mm", "[Ngày trả]");
 
             document.add(new Paragraph("Thời gian thuê: " + startDateStr + " đến " + endDateStr)
                     .setFont(font)
@@ -868,23 +876,9 @@ public class ContractMngServiceImpl implements ContractMngService {
 
             java.text.NumberFormat currencyFormat = java.text.NumberFormat.getInstance(new Locale("vi", "VN"));
             String totalAmountStr = currencyFormat.format(
-                    contract.getTotalRentalAmount() != null ? contract.getTotalRentalAmount() : BigDecimal.ZERO);
-            String depositStr = currencyFormat.format(
-                    contract.getDepositAmount() != null ? contract.getDepositAmount() : BigDecimal.ZERO);
-            String remainingAmountStr = currencyFormat.format(
-                    contract.getRemainingAmount() != null ? contract.getRemainingAmount() : BigDecimal.ZERO);
+                    contract.getFinalAmount() != null ? contract.getFinalAmount() : BigDecimal.ZERO);
 
             document.add(new Paragraph("Tiền thuê: " + totalAmountStr + " đồng")
-                    .setFont(font)
-                    .setFontSize(11)
-                    .setMarginBottom(3));
-
-            document.add(new Paragraph("Tiền đặt cọc: " + depositStr + " đồng")
-                    .setFont(font)
-                    .setFontSize(11)
-                    .setMarginBottom(3));
-
-            document.add(new Paragraph("Còn lại: " + remainingAmountStr + " đồng")
                     .setFont(font)
                     .setFontSize(11)
                     .setMarginBottom(3));
@@ -963,6 +957,25 @@ public class ContractMngServiceImpl implements ContractMngService {
         return (value != null && !value.trim().isEmpty()) ? value : placeholder;
     }
 
+    private String formatDateValue(Date date, String pattern, String placeholder) {
+        if (date == null) {
+            return placeholder;
+        }
+        return new SimpleDateFormat(pattern).format(date);
+    }
+
+    private String firstNonEmpty(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (value != null && !value.trim().isEmpty()) {
+                return value;
+            }
+        }
+        return null;
+    }
+
     // Helper method to add remaining clauses
     private void addRemainingClauses(Document document, com.itextpdf.kernel.font.PdfFont font, com.itextpdf.kernel.font.PdfFont fontBold) {
         document.add(new Paragraph("Điều 3. Trách nhiệm của Bên B")
@@ -975,7 +988,7 @@ public class ContractMngServiceImpl implements ContractMngService {
                 .setFontSize(11)
                 .setMarginLeft(20)
                 .setMarginBottom(2));
-        document.add(new Paragraph("2. Bảo quản xe trong suốt quá trình sử dụng;")
+        document.add(new Paragraph("2. Đảm bảo sử dụng xe đúng mục đích, đảm bảo chất lượng xe tốt và lái xe an toàn trong suốt quá trình thuê;")
                 .setFont(font)
                 .setFontSize(11)
                 .setMarginLeft(20)
